@@ -1,58 +1,38 @@
-import { useState } from 'react'
-import SearchBar from './components/SearchBar'
-import FoodList from './components/FoodList'
+import { useReducer } from 'react'
+import { Routes, Route } from 'react-router-dom'
+import NavBar from './components/NavBar'
+import HomePage from './pages/HomePage'
+import DetailPage from './pages/DetailPage'
+import SavedPage from './pages/SavedPage'
 
-function App() {
-  const [results, setResults] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
+function savedReducer(state, action) {
+  switch (action.type) {
+    case 'ADD':
+      if (state.find(item => item.code === action.product.code)) {
+        return state
+      }
+      return [...state, action.product]
 
- const handleSearch = async (query) => {
-  setLoading(true)
-  setError(null)
+    case 'REMOVE':
+      return state.filter(item => item.code !== action.code)
 
-  try {
-    const url = `https://world.openfoodfacts.org/api/v2/search?categories_tags=${encodeURIComponent(query)}&page_size=10`
-
-    const response = await fetch(url)
-
-    const data = await response.json()
-
-    console.log("DATA:", data)
-
-    const products = data.products || []
-
-    const filtered = products.filter(
-      (p) => p.product_name && p.product_name.trim() !== ''
-    )
-
-    setResults(filtered)
-
-  } catch (err) {
-    console.error("ERROR:", err)
-    setError("Unable to fetch food data. Please try again later.")
-  } finally {
-    setLoading(false)
+    default:
+      return state
   }
 }
 
+function App() {
+  const [saved, dispatch] = useReducer(savedReducer, [])
+
   return (
     <div>
-      <h1>FoodFacts</h1>
+      <NavBar savedCount={saved.length} />
 
-      <SearchBar onSearch={handleSearch} />
-
-      {loading && <p>Loading...</p>}
-
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-
-      {!loading && !error && results.length === 0 && (
-        <p>Search for a food to begin</p>
-      )}
-
-      {!loading && !error && results.length > 0 && (
-        <FoodList products={results} />
-      )}
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/product/:barcode" element={<DetailPage saved={saved} dispatch={dispatch} />} />
+        <Route path="/saved" element={<SavedPage saved={saved} dispatch={dispatch} />} />
+      </Routes>
     </div>
   )
 }
