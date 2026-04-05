@@ -1,22 +1,27 @@
+import Card from '@mui/material/Card'
+import CardContent from '@mui/material/CardContent'
+import Typography from '@mui/material/Typography'
+import CardActionArea from '@mui/material/CardActionArea'
+import { useNavigate } from 'react-router-dom'
+
 function FoodCard({ product }) {
-  const { product_name, brands, nutriments, image_small_url } = product
+  const navigate = useNavigate()
 
   return (
-    <div className="food-card">
-      {image_small_url ? (
-        <img src={image_small_url} alt={product_name} />
-      ) : (
-        <p>No image</p>
-      )}
-
-      <h2>{product_name || "Unknown Product"}</h2>
-      <p>{brands || "No brand"}</p>
-
-      <p>Calories: {nutriments?.['energy-kcal_100g'] || 0}</p>
-      <p>Protein: {nutriments?.proteins_100g || 0}g</p>
-      <p>Carbs: {nutriments?.carbohydrates_100g || 0}g</p>
-      <p>Fat: {nutriments?.fat_100g || 0}g</p>
-    </div>
+    <Card>
+      <CardActionArea
+        onClick={() =>
+          navigate(`/product/${product.id}`, { state: { product } })
+        }
+      >
+        <CardContent>
+          <Typography variant="h6">
+            {product.product_name}
+          </Typography>
+          <Typography>{product.brands}</Typography>
+        </CardContent>
+      </CardActionArea>
+    </Card>
   )
 }
 
